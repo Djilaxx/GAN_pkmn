@@ -2,6 +2,7 @@ import os
 import random
 import glob
 import re
+from pathlib import Path
 from PIL import Image
 import numpy as np 
 
@@ -69,6 +70,7 @@ def train():
     G_losses = []
     D_losses = []
     iters = 0
+    Path("checkpoint/").mkdir(parents=True, exist_ok=True)
 
     #Loading the data
     dataloader = get_data()
@@ -176,21 +178,21 @@ def train():
                 'model_state_dict': netG.state_dict(),
                 'optimizer_state_dict': optimizerG.state_dict(),
                 'loss': errG
-                }, "checkpoint/checkpointG-" + str(epoch) + '-' + str(errG.item()) + '.pt')
+                }, "checkpoint/checkpointG-" + str(epoch) + '-' + str(round(errG.item(),2)) + '.pt')
             
                 torch.save({
                 'epoch': epoch,
                 'model_state_dict': netD.state_dict(),
                 'optimizer_state_dict': optimizerD.state_dict(),
                 'loss': errD
-                }, 'checkpoint/checkpointD-' + str(epoch) + '-' + str(errD.item()) + '.pt')
+                }, 'checkpoint/checkpointD-' + str(epoch) + '-' + str(round(errD.item(),2)) + '.pt')
             iters += 1
 
 
 def evaluate():
     for file in glob.glob("checkpoint/checkpointG*"):
+        Path("results/").mkdir(parents=True, exist_ok=True)
         name = re.findall(r'[^\\/]+|[\\/]', file)[2]
-        os.mkdir("results/" + name)
         netG = Generator(config.MODEL.ngpu).to(device)
         cp = torch.load(file)
         netG.load_state_dict(cp["model_state_dict"])

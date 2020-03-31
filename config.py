@@ -10,7 +10,7 @@ config.MODEL.ndf = 64
 config.MODEL.ngpu = 1
 
 config.TRAIN = edict()
-config.TRAIN.num_epochs = 10
+config.TRAIN.num_epochs = 2
 config.TRAIN.lr = 0.0002
 config.TRAIN.beta1 = 0.5
 config.TRAIN.batch_size = 128
