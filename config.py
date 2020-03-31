@@ -16,7 +16,7 @@ config.TRAIN.beta1 = 0.5
 config.TRAIN.batch_size = 128
 
 config.DATA = edict()
-config.DATA.dataroot = 'D:/Documents/GitHub/GAN_pokemon/data'
+config.DATA.dataroot = 'D:/Documents/GitHub/DCGAN_pkmn/data'
 config.DATA.workers = 0
 config.DATA.image_size = (64,64)
 
