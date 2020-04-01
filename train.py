@@ -191,6 +191,8 @@ def train():
 
 def evaluate():
     for file in glob.glob("checkpoint/checkpointG*"):
+        if not file:
+            raise Exception("No checkpoint, train first")
         Path("results/").mkdir(parents=True, exist_ok=True)
         name = re.findall(r'[^\\/]+|[\\/]', file)[2]
         netG = Generator(config.MODEL.ngpu).to(device)

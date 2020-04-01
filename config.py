@@ -10,13 +10,13 @@ config.MODEL.ndf = 64
 config.MODEL.ngpu = 1
 
 config.TRAIN = edict()
-config.TRAIN.num_epochs = 2
+config.TRAIN.num_epochs = 1
 config.TRAIN.lr = 0.0002
 config.TRAIN.beta1 = 0.5
 config.TRAIN.batch_size = 128
 
 config.DATA = edict()
-config.DATA.dataroot = 'D:/Documents/GitHub/DCGAN_pkmn/data'
+config.DATA.dataroot = 'D:/Documents/GitHub/DCGAN_pkmn/data/'
 config.DATA.workers = 0
 config.DATA.image_size = (64,64)
 
