@@ -1,27 +1,37 @@
-# GAN_pokemon
+# GAN Pokemon
 
-I will use this project to teach myself to create GAN's and train them.
-https://github.com/jacobgil/keras-dcgan/blob/master/dcgan.py
-https://towardsdatascience.com/implementing-a-generative-adversarial-network-gan-dcgan-to-draw-human-faces-8291616904a
-https://github.com/kvpratama/gan/tree/master/pokemon
-https://github.com/moxiegushi/pokeGAN
-Most ressources make use of tensorflow thoughout the modeling. I want to use Keras (pure tensorflow is still a possibility) so we we'll see about that.
-## STEPS
+I will use this project to learn how to train GAN's, how they work and apply it on Pokemon data to try and create new fun forms of pokemon.  
+There are a few similar projects on Github that inspired me :  
+- https://github.com/kvpratama/gan/tree/master/pokemon
+- https://github.com/moxiegushi/pokeGAN  
 
-### DATA GENERATOR
-we will use the DataLoader function from the Pytorch library  which allow us to load images per batch, apply transforms and put them into tensor form for the model to use. 
-First though, we need all images to be in JPEG format with a white background. 
-Thus, first step in our data pre-processing as we have both .jpg images and .png. Is to make a function that take the .png images as input, add a white background to them and save them as JPEG. 
-the goal is to have a directory a ready to use images at the end so it should also transfer the JPEG images in the good directory. 
+## **DCGAN**
+<hr />
 
-### GERERATOR
-
-### DISCRIMINATOR
-
-### TRAINING PROCEDURE
-
-### EVALUATION
-Checkpoint every 8-9 epoch and manually evaluating by using the model on batch of noise. We observe a few cool results, the model doesn't produce really "better" pokemons after around epoch 100. Also, around epoch 350 the generator finds pattern that seems to fool the discriminator and repeat them. 
+## **Pokemon GAN**
+<hr />
 
 ## **Code**
 <hr />
+
+### **Prerequisites**
+```
+python -m pip install -r requirement.txt
+```
+
+### **Train**
+I apply the model on the pokemon data in the data_ready folder, you can re-train using :
+```
+python train.py --mode train 
+```
+
+You can also train on your own data (this is basically a torch implementation of DCGAN applied on pokemon data) by changing the root in config.py
+
+### **Evaluate**
+
+```
+``` 
+
+## **Reference**
+[1] [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434)  
+[2] [Generative Adversarial Networks](https://arxiv.org/abs/1406.2661v1)
