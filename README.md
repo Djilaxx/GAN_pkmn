@@ -7,14 +7,20 @@ There are a few similar projects on Github that inspired me :
 
 ## **DCGAN**
 <hr />
-![alt text](imgs/dcgan_model.png?raw=true "model") 
+
+![DCGAN](imgs/dcgan_model.png) 
 
 Basically, the **generator** is a CNN that is trained to turn a tensor of random (gaussian) noise into an image, and the **discriminator** is also a CNN that is trained to differentiate between real images and fake created by the **generator**. (I put a link to the paper in the references down below)  
 The particularity of GAN's such as this one is that in the case of creating new pokemons is that there isn't a real benchmark to tell you when the model is good or not, it's good when it's able to create images that you find good enough. 
 ## **Pokemon GAN**
 <hr />
 
-I used a pytorch implementation for the dataloading, model and training. For that i used an already existing one that i found [here].  
+![Pkmn1](D:\Documents\GitHub\DCGAN_pkmn\imgs\Pkmn_img19.jpg) 
+![Pkmn2](D:\Documents\GitHub\DCGAN_pkmn\imgs\Pkmn_img99.jpg) 
+![Pkmn3](D:\Documents\GitHub\DCGAN_pkmn\imgs\Pkmn_img453.jpg) 
+
+
+I used a pytorch implementation for the dataloading, model and training. For that i used an already existing one that i found [here], and reworked it to fit my needs. 
 I also used the tips and tricks from this [github]. The goal is to smooth the training of the model and improve it's stability. 
 
 
@@ -22,8 +28,10 @@ The model is able to create blobs of color with forms that could ressemble anima
 Such as those : 
 
 
+
 [here]: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
 [github]: https://github.com/soumith/ganhacks
+
 ## **Next steps**
 <hr />
 
