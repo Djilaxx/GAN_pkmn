@@ -19,7 +19,7 @@ The particularity of GAN's such as this one is that in the case of creating new 
 <a href="url"><img src="imgs/Pkmn_img99.jpg" align="center" height="96" width="96" ></a>
 <a href="url"><img src="imgs/Pkmn_img453.jpg" align="center" height="96" width="96" ></a>  
 
-  
+
 I used a pytorch implementation for the dataloading, model and training. For that i used an already existing one that i found [here], and reworked it to fit my needs. 
 I also used the tips and tricks from this [github]. The goal is to smooth the training of the model and improve it's stability. 
 
@@ -27,7 +27,11 @@ I also used the tips and tricks from this [github]. The goal is to smooth the tr
 The model is able to create blobs of color with forms that could ressemble animal/pokemon forms, but no details (no eyes, nose etc...).  
 Such as those : 
 
+<a href="url"><img src="imgs/fake1.jpg" align="center" height="64" width="64" ></a>
+<a href="url"><img src="imgs/fake2.jpg" align="center" height="64" width="64" ></a>
+<a href="url"><img src="imgs/fake3.jpg" align="center" height="64" width="64" ></a>  
 
+as you can see, these are not super cool new pokemons yet, but this project is still in it's infancy.  
 
 [here]: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
 [github]: https://github.com/soumith/ganhacks
@@ -52,7 +56,7 @@ python train.py --mode train
 You can also train on your own data (this is basically a torch implementation of DCGAN applied on pokemon data) by changing the root in config.py
 
 ### **Evaluate**
-
+Feature is not ready yet 
 ```
 ``` 
 
