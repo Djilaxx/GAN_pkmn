@@ -38,6 +38,13 @@ as you can see, these are not super cool new pokemons yet, but this project is s
 
 ## **Next steps**
 <hr />
+The next steps for this project include :  
+
+* Adding the functional evaluation function
+* Improving the training function to checkpoint the model more effectively
+* Changing the model (image size, more performant model)
+* Improving the dataset (Cleaning images that are too similar, adding new images)
+
 
 ## **Code**
 <hr />
