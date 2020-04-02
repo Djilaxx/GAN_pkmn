@@ -15,10 +15,9 @@ The particularity of GAN's such as this one is that in the case of creating new 
 ## **Pokemon GAN**
 <hr />
 
-![Pkmn1](imgs/Pkmn_img19.jpg) 
-![Pkmn2](imgs/Pkmn_img99.jpg) 
-![Pkmn3](imgs/Pkmn_img453.jpg) 
-
+<a href="url"><img src="imgs/Pkmn_img19.jpg" align="left" height="48" width="48" ></a>
+<a href="url"><img src="imgs/Pkmn_img19.jpg" align="center" height="48" width="48" ></a>
+<a href="url"><img src="imgs/Pkmn_img19.jpg" align="right" height="48" width="48" ></a>
 
 I used a pytorch implementation for the dataloading, model and training. For that i used an already existing one that i found [here], and reworked it to fit my needs. 
 I also used the tips and tricks from this [github]. The goal is to smooth the training of the model and improve it's stability. 
