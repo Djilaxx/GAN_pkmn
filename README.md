@@ -15,9 +15,9 @@ The particularity of GAN's such as this one is that in the case of creating new 
 ## **Pokemon GAN**
 <hr />
 
-![Pkmn1](D:\Documents\GitHub\DCGAN_pkmn\imgs\Pkmn_img19.jpg) 
-![Pkmn2](D:\Documents\GitHub\DCGAN_pkmn\imgs\Pkmn_img99.jpg) 
-![Pkmn3](D:\Documents\GitHub\DCGAN_pkmn\imgs\Pkmn_img453.jpg) 
+![Pkmn1](imgs\Pkmn_img19.jpg) 
+![Pkmn2](imgs\Pkmn_img99.jpg) 
+![Pkmn3](imgs\Pkmn_img453.jpg) 
 
 
 I used a pytorch implementation for the dataloading, model and training. For that i used an already existing one that i found [here], and reworked it to fit my needs. 
