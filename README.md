@@ -27,9 +27,9 @@ I also used the tips and tricks from this [github]. The goal is to smooth the tr
 The model is able to create blobs of color with forms that could ressemble animal/pokemon forms, but no details (no eyes, nose etc...).  
 Such as those : 
 
-<a href="url"><img src="imgs/fake1.jpg" align="center" height="64" width="64" ></a>
-<a href="url"><img src="imgs/fake2.jpg" align="center" height="64" width="64" ></a>
-<a href="url"><img src="imgs/fake3.jpg" align="center" height="64" width="64" ></a>  
+<a href="url"><img src="imgs/fake1.png" align="center" height="64" width="64" ></a>
+<a href="url"><img src="imgs/fake2.png" align="center" height="64" width="64" ></a>
+<a href="url"><img src="imgs/fake3.png" align="center" height="64" width="64" ></a>  
 
 as you can see, these are not super cool new pokemons yet, but this project is still in it's infancy.  
 
