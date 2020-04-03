@@ -64,13 +64,17 @@ if (device.type == 'cuda') and (config.MODEL.ngpu > 1):
 netD.apply(weights_init)
 
 
-def train():
-
+def train(checkpoint = "few"):
+    '''
+    Training function 
+    Checkpoint can be none, last (only last iteration of model is saved)
+    few (Model is saved at 25%, 50% 75% & Last) , default
+    often (Model is saved every 10% of total epoch) 
+    '''
     img_list = []
     G_losses = []
     D_losses = []
     iters = 0
-    Path("checkpoint/").mkdir(parents=True, exist_ok=True)
 
     #Loading the data
     dataloader = get_data()
@@ -91,6 +95,23 @@ def train():
     # Setup Adam optimizers for both G and D
     optimizerD = optim.Adam(netD.parameters(), lr=config.TRAIN.lr, betas=(config.TRAIN.beta1, 0.999))
     optimizerG = optim.Adam(netG.parameters(), lr=config.TRAIN.lr, betas=(config.TRAIN.beta1, 0.999))
+
+    def save_cp():
+        torch.save({
+        'epoch': epoch,
+        'model_state_dict': netG.state_dict(),
+        'optimizer_state_dict': optimizerG.state_dict(),
+        'loss': errG
+        }, "checkpoint/checkpointG-" + str(epoch) + '-' + str(round(errG.item(),2)) + '.pt')
+            
+        torch.save({
+        'epoch': epoch,
+        'model_state_dict': netD.state_dict(),
+        'optimizer_state_dict': optimizerD.state_dict(),
+        'loss': errD
+        }, 'checkpoint/checkpointD-' + str(epoch) + '-' + str(round(errD.item(),2)) + '.pt')
+
+
 
     print("Starting Training Loop...")
     # For each epoch
@@ -158,7 +179,7 @@ def train():
             optimizerG.step()
 
                 # Output training stats
-            if i % 50 == 0:
+            if i % 25 == 0:
                 print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
                     % (epoch, config.TRAIN.num_epochs, i, len(dataloader),
                         errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
@@ -168,6 +189,27 @@ def train():
             D_losses.append(errD.item())
 
             # Check how the generator is doing by saving G's output on fixed_noise
+            if checkpoint != "None":
+                Path("checkpoint/").mkdir(parents=True, exist_ok=True)
+                last_iter = ((epoch == config.TRAIN.num_epochs-1) and (i == len(dataloader)-1))
+                
+                if checkpoint == "last" & last_iter:
+                    save_cp()
+
+                elif checkpoint == "few":
+                    cp_array = np.array([0.25, 0.5, 0.75])
+                    cp_epoch = cp_array*config.TRAIN.num_epochs
+                    if epoch in cp_epoch.astype(int) or last_iter:
+                        save_cp()
+
+                elif checkpoint == "often":
+                    cp_array = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+                    cp_epoch = cp_array*config.TRAIN.num_epochs
+                    if epoch in cp_epoch.astype(int) or last_iter:
+                        save_cp()
+            else:
+                pass 
+
             if (iters % 500 == 0) or ((epoch == config.TRAIN.num_epochs-1) and (i == len(dataloader)-1)):
                 with torch.no_grad():
                     fake = netG(fixed_noise).detach().cpu()
