@@ -3,7 +3,6 @@ import random
 import glob
 import re
 from pathlib import Path
-from PIL import Image
 import numpy as np 
 
 import torch

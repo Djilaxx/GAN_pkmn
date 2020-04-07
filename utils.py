@@ -4,7 +4,6 @@ import torch.optim as optim
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 from numpy.random import choice
-from PIL import Image
 from config import config
 
 device = torch.device("cuda:0" if (torch.cuda.is_available() and config.MODEL.ngpu > 0) else "cpu")
