@@ -221,21 +221,22 @@ def train(checkpoint = "last"):
 
 
 def evaluate():
-    for file in glob.glob("checkpoint/checkpointG*"):
-        if not file:
-            raise Exception("No checkpoint, train first")
-        Path("results/").mkdir(parents=True, exist_ok=True)
-        name = re.findall(r'[^\\/]+|[\\/]', file)[2]
-        netG = Generator(config.MODEL.ngpu).to(device)
-        cp = torch.load(file)
-        netG.load_state_dict(cp["model_state_dict"])
-        netG.eval()
-        noise = torch.randn(64, config.MODEL.nz, 1, 1, device = device)
-        with torch.no_grad:
-            fake = netG(noise).detach().cpu()
-        for i in range(0, len(fake)):
-            img = fake[i]
-            vutils.save_image(img, "results/" + name + "/" + name + "_" + str(i) + ".png")
+    if not glob.glob("checkpoint/"):
+        raise Exception("No checkpoint, train first")
+    else:
+        for file in glob.glob("checkpoint/checkpointG*"):
+            Path("results/").mkdir(parents=True, exist_ok=True)
+            name = re.findall(r'[^\\/]+|[\\/]', file)[2]
+            netG = Generator(config.MODEL.ngpu).to(device)
+            cp = torch.load(file)
+            netG.load_state_dict(cp["model_state_dict"])
+            netG.eval()
+            noise = torch.randn(64, config.MODEL.nz, 1, 1, device = device)
+            with torch.no_grad:
+                fake = netG(noise).detach().cpu()
+            for i in range(0, len(fake)):
+                img = fake[i]
+                vutils.save_image(img, "results/" + name + "/" + name + "_" + str(i) + ".png")
 
 
 
