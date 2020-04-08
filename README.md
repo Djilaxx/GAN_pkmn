@@ -57,14 +57,28 @@ python -m pip install -r requirement.txt
 ### **Train**
 I apply the model on the pokemon data in the data_ready folder, you can re-train using :
 ```
-python train.py --mode train 
+python train.py --mode=train 
 ```
 
-You can also train on your own data (this is basically a torch implementation of DCGAN applied on pokemon data) by changing the root in config.py
+You can also train on your own data (this is basically a torch implementation of DCGAN applied on pokemon data) by changing the root in config.py  
+the cp parameters allow to choose between 4 possible checkpoint save options :
+* **none** will not save any checkpoint
+* **last** will save only the training last iteration
+* **few** will save the model at 25%, 50%, 75% and end of training
+* **often** will save every 10% of total training epoch  
+
+You can use it as such : 
+```
+python train.py --mode=train --cp=few
+```
 
 ### **Evaluate**
-Feature is not ready yet 
+The evaluation mode allow you to choose between 3 modes : 
+* **one** will create and save one fake img created by your model last cp in a result/ folder 
+* **batch** will create a batch (64 images) of fakes using your model last cp
+* **full** will create a batch of fakes for every checkpoint saved in your checkpoint/ folder
 ```
+python train.py --mode=evaluate --type=batch
 ``` 
 
 ## **Reference**
