@@ -220,24 +220,40 @@ def train(checkpoint = "last"):
             iters += 1
 
 
-def evaluate():
+def evaluate(type = "batch"):
+
+    def load_G(file):
+        netG.Generator(config.MODEL.ngpu).to(device)
+        cp = torch.load(file)
+        netG.load_state_dict(cp["model_state_dict"])
+        netG.eval()
+        return netG
+    
+    def create_fake(b_s):
+        noise = torch.randn(b_s, config.MODEL.nz, 1, 1, device = device)
+        with torch.no_grad:
+            fake = netG(noise).detach().cpu()
+        for i in range(0, len(fake)):
+            img = fake[i]
+            vutils.save_image(img, "results/" + name + "/" + name + "_" + str(i) + ".png")
+
     if not glob.glob("checkpoint/"):
         raise Exception("No checkpoint, train first")
-    else:
-        for file in glob.glob("checkpoint/checkpointG*"):
-            Path("results/").mkdir(parents=True, exist_ok=True)
-            name = re.findall(r'[^\\/]+|[\\/]', file)[2]
-            netG = Generator(config.MODEL.ngpu).to(device)
-            cp = torch.load(file)
-            netG.load_state_dict(cp["model_state_dict"])
-            netG.eval()
-            noise = torch.randn(64, config.MODEL.nz, 1, 1, device = device)
-            with torch.no_grad:
-                fake = netG(noise).detach().cpu()
-            for i in range(0, len(fake)):
-                img = fake[i]
-                vutils.save_image(img, "results/" + name + "/" + name + "_" + str(i) + ".png")
-
+    
+    Path("results/").mkdir(parents=True, exist_ok=True)
+    for file in sorted(glob.glob("checkpoint/checkpointG*"), key=os.path.getmtime):
+        name = re.findall(r'[^\\/]+|[\\/]', file)[2]
+        if type == "batch" and file == sorted(glob.glob("checkpoint/checkpointG*"), key=os.path.getmtime)[-1]:
+            netG = load_G(file)
+            create_fake(64)
+        elif type == "full":
+            netG = load_G(file)
+            create_fake(64)
+        elif type == "one" and file == sorted(glob.glob("checkpoint/checkpointG*"), key=os.path.getmtime)[-1]:
+            netG = load_G(file)
+            create_fake(1)
+        else:
+            raise Exception("Unknown evaluation type")
 
 
 if __name__ == '__main__':
@@ -246,11 +262,12 @@ if __name__ == '__main__':
 
     parser.add_argument('--mode', type = str, default = "train", help = "train, evaluate")
     parser.add_argument('--cp', type = str, default = "last", help = "none, last, few, often")
+    parser.add_argument('--eval_type', type = str, default = "batch", help = "one, batch, full -- one and batch create fake image on last cp, full create fake for every cp")
     args = parser.parse_args()
 
     if args.mode == "train":
         train(checkpoint=args.cp)
     elif args.mode == "evaluate":
-        evaluate()
+        evaluate(type = args.eval_type)
     else:
         raise Exception("Unknown --mode")

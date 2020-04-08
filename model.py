@@ -36,7 +36,15 @@ class Generator(nn.Module):
 
     def forward(self, input):
         return self.main(input)
-
+'''
+    def load_G(self, checkpoint, eval = True):
+        netG = Generator(config.MODEL.ngpu).to(device)
+        cp = torch.load(checkpoint)
+        netG.load_state_dict(cp["model_state_dict"])
+        if eval is True:
+            netG.eval()
+        return netG
+'''
 
 class Discriminator(nn.Module):
     def __init__(self, ngpu):
