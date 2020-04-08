@@ -4,7 +4,6 @@ import torch.optim as optim
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 from numpy.random import choice
-from PIL import Image
 from config import config
 
 device = torch.device("cuda:0" if (torch.cuda.is_available() and config.MODEL.ngpu > 0) else "cpu")
@@ -13,7 +12,7 @@ device = torch.device("cuda:0" if (torch.cuda.is_available() and config.MODEL.ng
 def weights_init(m):
     '''
     The function check the layers name and init it's weights with samples from a N(0,0.02)
-    Init BN with N(1,0.02) (why?) and bias at 0 
+    Init BN with N(1,0.02) (why?) and bias at 0 g
     '''
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:

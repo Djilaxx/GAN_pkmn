@@ -3,7 +3,6 @@ import random
 import glob
 import re
 from pathlib import Path
-from PIL import Image
 import numpy as np 
 
 import torch
@@ -64,7 +63,7 @@ if (device.type == 'cuda') and (config.MODEL.ngpu > 1):
 netD.apply(weights_init)
 
 
-def train(checkpoint = "few"):
+def train(checkpoint = "last"):
     '''
     Training function 
     Checkpoint can be none, last (only last iteration of model is saved)
@@ -97,6 +96,10 @@ def train(checkpoint = "few"):
     optimizerG = optim.Adam(netG.parameters(), lr=config.TRAIN.lr, betas=(config.TRAIN.beta1, 0.999))
 
     def save_cp():
+        '''
+        Save G & D in the checkpoint repository
+        '''
+        Path("checkpoint/").mkdir(parents=True, exist_ok=True)
         torch.save({
         'epoch': epoch,
         'model_state_dict': netG.state_dict(),
@@ -189,11 +192,10 @@ def train(checkpoint = "few"):
             D_losses.append(errD.item())
 
             # Check how the generator is doing by saving G's output on fixed_noise
-            if checkpoint != "None":
-                Path("checkpoint/").mkdir(parents=True, exist_ok=True)
+            if checkpoint != "none":
                 last_iter = ((epoch == config.TRAIN.num_epochs-1) and (i == len(dataloader)-1))
                 
-                if checkpoint == "last" & last_iter:
+                if checkpoint == "last" and last_iter:
                     save_cp()
 
                 elif checkpoint == "few":
@@ -214,50 +216,40 @@ def train(checkpoint = "few"):
                 with torch.no_grad():
                     fake = netG(fixed_noise).detach().cpu()
                 img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
-            # We also save G and D every few epochs so that later we can test every version and choose the best one
-                torch.save({
-                'epoch': epoch,
-                'model_state_dict': netG.state_dict(),
-                'optimizer_state_dict': optimizerG.state_dict(),
-                'loss': errG
-                }, "checkpoint/checkpointG-" + str(epoch) + '-' + str(round(errG.item(),2)) + '.pt')
-            
-                torch.save({
-                'epoch': epoch,
-                'model_state_dict': netD.state_dict(),
-                'optimizer_state_dict': optimizerD.state_dict(),
-                'loss': errD
-                }, 'checkpoint/checkpointD-' + str(epoch) + '-' + str(round(errD.item(),2)) + '.pt')
+
             iters += 1
 
 
 def evaluate():
-    for file in glob.glob("checkpoint/checkpointG*"):
-        if not file:
-            raise Exception("No checkpoint, train first")
-        Path("results/").mkdir(parents=True, exist_ok=True)
-        name = re.findall(r'[^\\/]+|[\\/]', file)[2]
-        netG = Generator(config.MODEL.ngpu).to(device)
-        cp = torch.load(file)
-        netG.load_state_dict(cp["model_state_dict"])
-        netG.eval()
-        noise = torch.randn(64, config.MODEL.nz, 1, 1, device = device)
-        with torch.no_grad:
-            fake = netG(noise).detach().cpu()
-        for i in range(0, len(fake)):
-            img = fake[i]
-            vutils.save_image(img, "results/" + name + "/" + name + "_" + str(i) + ".png")
+    if not glob.glob("checkpoint/"):
+        raise Exception("No checkpoint, train first")
+    else:
+        for file in glob.glob("checkpoint/checkpointG*"):
+            Path("results/").mkdir(parents=True, exist_ok=True)
+            name = re.findall(r'[^\\/]+|[\\/]', file)[2]
+            netG = Generator(config.MODEL.ngpu).to(device)
+            cp = torch.load(file)
+            netG.load_state_dict(cp["model_state_dict"])
+            netG.eval()
+            noise = torch.randn(64, config.MODEL.nz, 1, 1, device = device)
+            with torch.no_grad:
+                fake = netG(noise).detach().cpu()
+            for i in range(0, len(fake)):
+                img = fake[i]
+                vutils.save_image(img, "results/" + name + "/" + name + "_" + str(i) + ".png")
+
+
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--mode', type = str, default = "train", help = "train, evaluate")
-
+    parser.add_argument('--cp', type = str, default = "last", help = "none, last, few, often")
     args = parser.parse_args()
 
     if args.mode == "train":
-        train()
+        train(checkpoint=args.cp)
     elif args.mode == "evaluate":
         evaluate()
     else:
