@@ -266,7 +266,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.mode == "train":
-        train(checkpoint=args.cp)
+        train(checkpoint = args.cp)
     elif args.mode == "evaluate":
         evaluate(type = args.eval_type)
     else:
