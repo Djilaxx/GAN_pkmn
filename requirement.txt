@@ -1,5 +1,6 @@
 torch
 torchvision
+tensorboard
 numpy
 pathlib
 easydict
