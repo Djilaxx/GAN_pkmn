@@ -86,7 +86,11 @@ The evaluation mode allow you to choose between 3 modes :
 * **full** will create a batch of fakes for every checkpoint saved in your checkpoint/ folder
 ```
 python train.py --mode=evaluate --type=batch
-``` 
+```
+
+## IN PROGRESS
+I'm currently working on the code to implement WGAN-GP training procedure along with the classic DCGAN. the files in training/ and backbone/ are in progress along with the main.py file. 
+You can still use the commands above to start training a DCGAN on the data. 
 
 ## **Reference**
 [1] [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434)  
