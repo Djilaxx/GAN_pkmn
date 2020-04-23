@@ -12,6 +12,13 @@ There are a few similar projects on Github that inspired me :
 
 Basically, the **generator** is a CNN that is trained to turn a tensor of random (gaussian) noise into an image, and the **discriminator** is also a CNN that is trained to differentiate between real images and fake created by the **generator**. (I put a link to the paper in the references down below)  
 The particularity of GAN's such as this one is that in the case of creating new pokemons is that there isn't a real benchmark to tell you when the model is good or not, it's good when it's able to create images that you find good enough. 
+
+## **WGAN & WGAN-GP**
+<hr />
+Classical GANs tend to have a hard time having a stable training procedure. To improve it, they focus on the model divergence.  
+The goal of a GAN is to try to find the latent distribution of a dataset to be able to replicate it.   
+
+
 ## **Pokemon GAN**
 <hr />
 
@@ -83,4 +90,6 @@ python train.py --mode=evaluate --type=batch
 
 ## **Reference**
 [1] [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434)  
-[2] [Generative Adversarial Networks](https://arxiv.org/abs/1406.2661v1)
+[2] [Generative Adversarial Networks](https://arxiv.org/abs/1406.2661v1)  
+[3] [Wasserstein GAN](https://arxiv.org/abs/1701.07875)  
+[4] [Improved Training of Wasserstein GANs](https://arxiv.org/pdf/1704.00028.pdf)

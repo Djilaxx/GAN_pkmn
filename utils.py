@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 from numpy.random import choice
 from config import config
 
-device = torch.device("cuda:0" if (torch.cuda.is_available() and config.MODEL.ngpu > 0) else "cpu")
+device = torch.device("cuda:0" if (torch.cuda.is_available() and config.DATA.ngpu > 0) else "cpu")
 
 def get_dataloader():
     dataset = dset.ImageFolder(root=config.DATA.dataroot,
@@ -23,7 +23,7 @@ def get_dataloader():
                            ]))
 
     dataloader = torch.utils.data.DataLoader(dataset, 
-                                         batch_size=config.TRAIN.batch_size,
+                                         batch_size=config.DATA.batch_size,
                                          shuffle=True, 
                                          num_workers=config.DATA.workers)
     return dataloader

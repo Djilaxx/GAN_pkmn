@@ -19,7 +19,7 @@ from model import Generator, Discriminator
 from utils import weights_init, label_smoothing, noisy_labelling
 from config import config
 
-device = torch.device("cuda:0" if (torch.cuda.is_available() and config.MODEL.ngpu > 0) else "cpu")
+device = torch.device("cuda:0" if (torch.cuda.is_available() and config.DATA.ngpu > 0) else "cpu")
 ####### DATA LOADING #######
 def get_data():
     dataset = dset.ImageFolder(root=config.DATA.dataroot,
@@ -33,7 +33,7 @@ def get_data():
                            ]))
 
     dataloader = torch.utils.data.DataLoader(dataset, 
-                                         batch_size=config.TRAIN.batch_size,
+                                         batch_size=config.DATA.batch_size,
                                          shuffle=True, 
                                          num_workers=config.DATA.workers)
     return dataloader
@@ -41,22 +41,22 @@ def get_data():
 
 ##### LOADING MODELS ######
 
-netG = Generator(config.MODEL.ngpu).to(device)
+netG = Generator(config.DATA.ngpu).to(device)
 
 # Handle multi-gpu if desired
-if (device.type == 'cuda') and (config.MODEL.ngpu > 1):
-    netG = nn.DataParallel(netG, list(range(config.MODEL.ngpu)))
+if (device.type == 'cuda') and (config.DATA.ngpu > 1):
+    netG = nn.DataParallel(netG, list(range(config.DATA.ngpu)))
 
 # Apply the weights_init function to randomly initialize all weights
 #  to mean=0, stdev=0.2.
 netG.apply(weights_init)
 
 # Create the Discriminator
-netD = Discriminator(config.MODEL.ngpu).to(device)
+netD = Discriminator(config.DATA.ngpu).to(device)
 
 # Handle multi-gpu if desired
-if (device.type == 'cuda') and (config.MODEL.ngpu > 1):
-    netD = nn.DataParallel(netD, list(range(config.MODEL.ngpu)))
+if (device.type == 'cuda') and (config.DATA.ngpu > 1):
+    netD = nn.DataParallel(netD, list(range(config.DATA.ngpu)))
 
 # Apply the weights_init function to randomly initialize all weights
 #  to mean=0, stdev=0.2.
@@ -79,21 +79,21 @@ def train(checkpoint = "last"):
     dataloader = get_data()
 
     #Creating the generator and initializing it's weights
-    netG = Generator(config.MODEL.ngpu).to(device)
+    netG = Generator(config.DATA.ngpu).to(device)
     netG.apply(weights_init)
     #Creating the discriminator and initializing it's weights
-    netD = Discriminator(config.MODEL.ngpu).to(device)
+    netD = Discriminator(config.DATA.ngpu).to(device)
     netD.apply(weights_init)
 
     # Initialize BCELoss function
     criterion = nn.BCELoss()
-    fixed_noise = torch.randn(64, config.MODEL.nz, 1, 1, device=device)
+    fixed_noise = torch.randn(64, config.DATA.nz, 1, 1, device=device)
     real_label = 1
     fake_label = 0
 
     # Setup Adam optimizers for both G and D
-    optimizerD = optim.Adam(netD.parameters(), lr=config.TRAIN.lr, betas=(config.TRAIN.beta1, 0.999))
-    optimizerG = optim.Adam(netG.parameters(), lr=config.TRAIN.lr, betas=(config.TRAIN.beta1, 0.999))
+    optimizerD = optim.Adam(netD.parameters(), lr=config.TRAIN.dcgan.lr, betas=(config.TRAIN.dcgan.beta1, 0.999))
+    optimizerG = optim.Adam(netG.parameters(), lr=config.TRAIN.dcgan.lr, betas=(config.TRAIN.dcgan.beta1, 0.999))
 
     def save_cp():
         '''
@@ -118,7 +118,7 @@ def train(checkpoint = "last"):
 
     print("Starting Training Loop...")
     # For each epoch
-    for epoch in range(config.TRAIN.num_epochs):
+    for epoch in range(config.DATA.num_epochs):
     # For each batch in the dataloader
         for i, data in enumerate(dataloader, 0):
 
@@ -146,7 +146,7 @@ def train(checkpoint = "last"):
 
             ## Train with all-fake batch
             # Generate batch of latent vectors
-            noise = torch.randn(b_size, config.MODEL.nz, 1, 1, device=device)
+            noise = torch.randn(b_size, config.DATA.nz, 1, 1, device=device)
             # Generate fake image batch with G
             fake = netG(noise)
             label.fill_(fake_label)
@@ -184,7 +184,7 @@ def train(checkpoint = "last"):
                 # Output training stats
             if i % 25 == 0:
                 print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
-                    % (epoch, config.TRAIN.num_epochs, i, len(dataloader),
+                    % (epoch, config.DATA.num_epochs, i, len(dataloader),
                         errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
 
             # Save Losses for plotting later
@@ -193,26 +193,26 @@ def train(checkpoint = "last"):
 
             # Check how the generator is doing by saving G's output on fixed_noise
             if checkpoint != "none":
-                last_iter = ((epoch == config.TRAIN.num_epochs-1) and (i == len(dataloader)-1))
+                last_iter = ((epoch == config.DATA.num_epochs-1) and (i == len(dataloader)-1))
                 
                 if checkpoint == "last" and last_iter:
                     save_cp()
 
                 elif checkpoint == "few":
                     cp_array = np.array([0.25, 0.5, 0.75])
-                    cp_epoch = cp_array*config.TRAIN.num_epochs
+                    cp_epoch = cp_array*config.DATA.num_epochs
                     if epoch in cp_epoch.astype(int) or last_iter:
                         save_cp()
 
                 elif checkpoint == "often":
                     cp_array = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-                    cp_epoch = cp_array*config.TRAIN.num_epochs
+                    cp_epoch = cp_array*config.DATA.num_epochs
                     if epoch in cp_epoch.astype(int) or last_iter:
                         save_cp()
             else:
                 pass 
 
-            if (iters % 500 == 0) or ((epoch == config.TRAIN.num_epochs-1) and (i == len(dataloader)-1)):
+            if (iters % 500 == 0) or ((epoch == config.DATA.num_epochs-1) and (i == len(dataloader)-1)):
                 with torch.no_grad():
                     fake = netG(fixed_noise).detach().cpu()
                 img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
@@ -223,14 +223,14 @@ def train(checkpoint = "last"):
 def evaluate(type = "batch"):
 
     def load_G(file):
-        netG.Generator(config.MODEL.ngpu).to(device)
+        netG.Generator(config.DATA.ngpu).to(device)
         cp = torch.load(file)
         netG.load_state_dict(cp["model_state_dict"])
         netG.eval()
         return netG
     
     def create_fake(b_s):
-        noise = torch.randn(b_s, config.MODEL.nz, 1, 1, device = device)
+        noise = torch.randn(b_s, config.DATA.nz, 1, 1, device = device)
         with torch.no_grad:
             fake = netG(noise).detach().cpu()
         for i in range(0, len(fake)):
