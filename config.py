@@ -27,4 +27,4 @@ config.DATA.ngpu = 1
 config.DATA.nz = 100
 config.DATA.image_size = (64,64)
 config.DATA.batch_size = 128
-config.DATA.num_epochs = 300
+config.DATA.num_epochs = 1000
