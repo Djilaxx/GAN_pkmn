@@ -64,7 +64,7 @@ class WGANGP_train(object):
             'model_state_dict': self.G.state_dict(),
             'optimizer_state_dict': self.optimG.state_dict(),
             'loss': errG
-            }, "checkpoint/checkpointG-" + str(epoch) + '-' + str(round(errG.item(),2)) + '.pt')
+            }, "checkpoint/checkpointG-" + "WGAN-GP"+ "-" + str(epoch) + '-' + str(round(errG.item(),2)) + '.pt')
             
             torch.save({
             'epoch': epoch,
