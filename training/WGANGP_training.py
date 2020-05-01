@@ -2,6 +2,7 @@ import os
 import random
 import glob
 import re
+import time as t
 from pathlib import Path
 import numpy as np 
 
@@ -15,7 +16,8 @@ from torch.utils.tensorboard import SummaryWriter
 from torch import autograd
 
 from backbone.DCGAN import DCGAN_Generator, DCGAN_Discriminator
-from utils import weights_init, get_dataloader
+from utils.dataloader import get_dataloader
+from utils.utils import weights_init
 from config import config
 
 class WGANGP_train(object):
@@ -30,10 +32,11 @@ class WGANGP_train(object):
         dataloader : Torch object to load data from a dataset  
     '''
     
-    def __init__(self, Generator, Discriminator):
+    def __init__(self, Generator, Discriminator, run_note = ''):
         print("Training WGAN-GP model.")
         self.device =  torch.device("cuda:0" if (torch.cuda.is_available() and config.DATA.ngpu > 0) else "cpu")
-        self.writer = SummaryWriter('runs/WGANGP_pokemon')
+        self.run_note = run_note.replace(" ", "_")
+        self.writer = SummaryWriter(os.path.join('runs/', self.run_note))
         self.fix_noise = torch.randn(64, config.DATA.nz, 1, 1, device = self.device)
         self.dataloader = get_dataloader()
         self.critics_iter = 5
@@ -47,10 +50,7 @@ class WGANGP_train(object):
         self.optimG = optim.Adam(self.G.parameters(), lr = config.TRAIN.wgan_gp.lr, betas=(config.TRAIN.wgan_gp.beta1, config.TRAIN.wgan_gp.beta2))
 
     def train(self, checkpoint = "last"):
-        one = torch.tensor(1, dtype=torch.float)
-        mone = one * -1
-        one = one.to(self.device)
-        mone = mone.to(self.device)
+        self.t_begin = t.time()
         iters = 0
 
         def save_cp():
@@ -74,6 +74,8 @@ class WGANGP_train(object):
             }, 'checkpoint/checkpointD-' + str(epoch) + '-' + str(round(errD.item(),2)) + '.pt')
 
         for epoch in range(config.DATA.num_epochs):
+            t_epoch = t.time()
+
             for i, data in enumerate(self.dataloader, 0):
 
                 #----------------------------------------
@@ -84,40 +86,33 @@ class WGANGP_train(object):
                 self.D.zero_grad()
                 real_data = data[0].to(self.device)
                 b_size = real_data.size(0)
+                output_real = self.D(real_data)
 
-                output_real = self.D(real_data).view(-1)
-                errD_real = output_real.mean()
-                errD_real.backward(mone)
-
-                # TRAIN ON FAKE DATA
                 noise = torch.randn(b_size, config.DATA.nz, 1, 1, device = self.device)
                 fake = self.G(noise)
-
                 output_fake = self.D(fake.detach()).view(-1)
-                errD_fake = output_fake.mean()
-                errD_fake.backward(one)
 
-                errD = - errD_real + errD_fake
-
-                # CALCULATE GRADIENT PENALTY
+                errD = self.wasserstein_loss_dis(output_fake=output_fake,
+                                                 output_real=output_real)
+                
                 errD_GP = self.compute_gradient_penalty_loss(real_images=real_data, fake_images=fake, gp_scale=config.TRAIN.wgan_gp.lambda_gp)
-                errD_GP.backward()
-                errD_total = errD + errD_GP
 
-                    # TAKE AN OPTIMIZER STEP FOR DISCRIMINATOR
+                errD_total = errD + errD_GP
+                errD_total.backward()
+
                 self.optimD.step()
 
-                D_x, D_Gz = self.compute_probs(output_real=output_real,
+                D_x, D_G_z1 = self.compute_probs(output_real=output_real,
                                               output_fake=output_fake)
-                    #-------------------
-                    # TRAIN GENERATOR
-                    #-------------------
+                #-------------------
+                # TRAIN GENERATOR
+                #-------------------
                 if i % self.critics_iter == 0:
 
                         self.G.zero_grad()
                         output_gen = self.D(fake).view(-1)
-                        errG = output_gen.mean()
-                        errG.backward(mone)
+                        errG = self.wasserstein_loss_gen(output_fake=output_gen)
+                        errG.backward()
                         D_G_z2 = torch.sigmoid(output_gen).mean().item()
                         
                         self.optimG.step()
@@ -127,79 +122,47 @@ class WGANGP_train(object):
                 #-------------------------
 
                 # PRINT TRAINING INFO AND SAVE LOSS
-                if i % 25 == 0:
-                    print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
-                        % (epoch, config.DATA.num_epochs, i, len(self.dataloader),
-                            errD_total.item(), errG.item(), D_x, D_Gz, D_G_z2))
-
-                    self.writer.add_scalar("Generator Loss", errG.item(), global_step= epoch * len(self.dataloader) + i)
-                    self.writer.add_scalar("Discriminator Loss", errD_total.item(), global_step= epoch * len(self.dataloader) + i )
-
                 if (iters % 500 == 0) or ((epoch == config.DATA.num_epochs-1) and (i == len(self.dataloader)-1)):
                     with torch.no_grad():
                         fake_grid = self.G(self.fix_noise).detach().cpu()
                     self.writer.add_image("fake pokemons", fake_grid, global_step= epoch * len(self.dataloader) + i, dataformats="NCHW")
                 
                 # MODEL CHECKPOINT FOR FURTHER TRAINING OR EVALUATION
-                if checkpoint != "none":
-                    last_iter = ((epoch == config.DATA.num_epochs-1) and (i == len(self.dataloader)-1))
-                
-                    if checkpoint == "last" and last_iter:
+                last_epoch = (epoch == config.DATA.num_epochs-1)
+                last_iter = (i == len(self.dataloader)-1)
+                if checkpoint == "last" and last_epoch and last_iter:
                         save_cp()
 
-                    elif checkpoint == "few":
-                        cp_array = np.array([0.25, 0.5, 0.75])
-                        cp_epoch = cp_array*config.DATA.num_epochs
-                        if epoch in cp_epoch.astype(int) or last_iter:
-                            save_cp()
+                elif checkpoint == "few":
+                    cp_array = np.array([0.25, 0.5, 0.75])
+                    cp_epoch = cp_array*config.DATA.num_epochs
+                    if (epoch in cp_epoch.astype(int) and last_iter) or (last_epoch and last_iter):
+                        save_cp()
 
-                    elif checkpoint == "often":
-                        cp_array = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
-                        cp_epoch = cp_array*config.DATA.num_epochs
-                        if epoch in cp_epoch.astype(int) or last_iter:
-                            save_cp()
+                elif checkpoint == "often":
+                    cp_array = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+                    cp_epoch = cp_array*config.DATA.num_epochs
+                    if (epoch in cp_epoch.astype(int) and last_iter) or (last_epoch and last_iter):
+                        save_cp()
+                
                 else:
                     pass
 
                 iters += 1
 
+            time_epoch = t.time() - t_epoch
+            print('[%d/%d][%d/%d]\tLoss_D: %.4f \tTotal_Loss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f\tTime: %.4f'
+                % (epoch, config.DATA.num_epochs, i, len(self.dataloader),
+                    errD.item(), errD_total.item(), errG.item(), D_x, D_G_z1, D_G_z2, time_epoch))
 
+            self.writer.add_scalar("DCGAN Generator Loss", errG.item(), global_step= epoch * len(self.dataloader) + i)
+            self.writer.add_scalar("DCGAN Discriminator Loss", errD.item(), global_step= epoch * len(self.dataloader) + i )
+            self.writer.add_scalar("DCGAN Real images detection", D_x, global_step = epoch * len(self.dataloader) + i )
+            self.writer.add_scalar("DCGAN Fake images detection", D_G_z1, global_step = epoch * len(self.dataloader) + i )
 
-    def evaluate(self, type = "batch"):
-
-        def load_G(file):
-            self.G.Generator(config.DATA.ngpu).to(self.device)
-            cp = torch.load(file)
-            self.G.load_state_dict(cp["model_state_dict"])
-            self.G.eval()
-            return self.G
-    
-        def create_fake(b_s):
-            noise = torch.randn(b_s, config.MODEL.dcgan.nz, 1, 1, device = self.device)
-            with torch.no_grad:
-                fake = self.G(noise).detach().cpu()
-            for i in range(0, len(fake)):
-                img = fake[i]
-                vutils.save_image(img, "results/" + name + "/" + name + "_" + str(i) + ".png")
-
-        if not glob.glob("checkpoint/"):
-            raise Exception("No checkpoint, train first")
-    
-        Path("results/").mkdir(parents=True, exist_ok=True)
-        for file in sorted(glob.glob("checkpoint/checkpointG*"), key=os.path.getmtime):
-            name = re.findall(r'[^\\/]+|[\\/]', file)[2]
-            if type == "batch" and file == sorted(glob.glob("checkpoint/checkpointG*"), key=os.path.getmtime)[-1]:
-                self.G = load_G(file)
-                create_fake(64)
-            elif type == "full":
-                self.G = load_G(file)
-                create_fake(64)
-            elif type == "one" and file == sorted(glob.glob("checkpoint/checkpointG*"), key=os.path.getmtime)[-1]:
-                self.G = load_G(file)
-                create_fake(1)
-            else:
-                raise Exception("Unknown evaluation type")
-        
+        self.t_end = t.time()
+        print('Time of training:{}'.format((self.t_end - self.t_begin)))
+     
     def compute_gradient_penalty_loss(self,
                                       real_images,
                                       fake_images,
@@ -262,3 +225,28 @@ class WGANGP_train(object):
         D_Gz = torch.sigmoid(output_fake).mean().item()
         return D_x, D_Gz
         
+    def wasserstein_loss_dis(self, output_real, output_fake):
+        """
+        Computes the wasserstein loss for the discriminator.
+        Args:
+            output_real (Tensor): Discriminator output logits for real images.
+            output_fake (Tensor): Discriminator output logits for fake images.
+        Returns:
+            Tensor: A scalar tensor loss output.        
+        """
+        loss = -1.0 * output_real.mean() + output_fake.mean()
+
+        return loss
+
+    
+    def wasserstein_loss_gen(self, output_fake):
+        """
+        Computes the wasserstein loss for generator.
+        Args:
+            output_fake (Tensor): Discriminator output logits for fake images.
+        Returns:
+            Tensor: A scalar tensor loss output.
+        """
+        loss = -output_fake.mean()
+
+        return loss

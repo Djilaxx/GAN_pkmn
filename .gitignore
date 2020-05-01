@@ -1,6 +1,8 @@
 test.ipynb
-__pycache__/config.cpython-37.pyc
-__pycache__/utils.cpython-37.pyc
-runs/DCGAN_pokemon/events.out.tfevents.1587621915.DESKTOP-HTE4MAR.9296.0
-runs/WGANGP_pokemon/events.out.tfevents.1587565819.DESKTOP-HTE4MAR.11488.0
-__pycache__/config.cpython-37.pyc
+__pycache__/
+*.pyo
+*.pyc
+__pycache__/*.pyc
+runs/
+checkpoint/
+results/

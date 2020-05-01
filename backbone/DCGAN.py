@@ -6,6 +6,7 @@ class DCGAN_Generator(nn.Module):
     '''
     Our Generator is subclassed with the nn.Module
     The base class for all NN in torch
+    Adding Dropout to the Generator to create "noise" as recommanded in https://github.com/soumith/ganhacks
     '''
     def __init__(self, ngpu):
         super(DCGAN_Generator, self).__init__()
@@ -14,19 +15,20 @@ class DCGAN_Generator(nn.Module):
             # input is Z, going into a convolution
             nn.ConvTranspose2d(config.DATA.nz, config.MODEL.dcgan.ngf * 8, 4, 1, 0, bias=False),
             nn.BatchNorm2d(config.MODEL.dcgan.ngf * 8),
-            nn.ReLU(True),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(0.5),
             # state size. (ngf*8) x 4 x 4
             nn.ConvTranspose2d(config.MODEL.dcgan.ngf * 8, config.MODEL.dcgan.ngf * 4, 4, 2, 1, bias=False),
             nn.BatchNorm2d(config.MODEL.dcgan.ngf * 4),
-            nn.ReLU(True),
+            nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf*4) x 8 x 8
             nn.ConvTranspose2d(config.MODEL.dcgan.ngf * 4, config.MODEL.dcgan.ngf * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(config.MODEL.dcgan.ngf * 2),
-            nn.ReLU(True),
+            nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf*2) x 16 x 16
             nn.ConvTranspose2d(config.MODEL.dcgan.ngf * 2, config.MODEL.dcgan.ngf, 4, 2, 1, bias=False),
             nn.BatchNorm2d(config.MODEL.dcgan.ngf),
-            nn.ReLU(True),
+            nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf) x 32 x 32
             nn.ConvTranspose2d(config.MODEL.dcgan.ngf, config.MODEL.dcgan.nc, 4, 2, 1, bias=False),
             nn.Tanh()
