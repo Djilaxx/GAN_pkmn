@@ -47,10 +47,10 @@ as you can see, these are not super cool new pokemons yet, but this project is s
 <hr />
 The next steps for this project include :  
 
-* Adding the functional evaluation function
-* Improving the training function to checkpoint the model more effectively
+* Work on WGAN-GP implementation
 * Changing the model (image size, more performant model)
 * Improving the dataset (Cleaning images that are too similar, adding new images)
+* Look into SN-GAN and SAGAN for next implementation
 
 
 ## **Code**
@@ -61,33 +61,48 @@ The next steps for this project include :
 python -m pip install -r requirement.txt
 ```
 
-### **Train**
+## **Train**
+
+### **Train a DCGAN** :
 I apply the model on the pokemon data in the data_ready folder, you can re-train using :
 ```
-python train.py --mode=train 
+python main.py --model=DCGAN --mode=train --run_note=NAME_OF_RUN
+```
+
+### **Train a WGAN-GP** :
+The WGAN-GP implementation is still in progress, but should normally start correctly :
+```
+python main.py --model=WGAN-GP --backbone=WGAN --run_note=NAME_OF_RUN
 ```
 
 You can also train on your own data (this is basically a torch implementation of DCGAN applied on pokemon data) by changing the root in config.py  
-the cp parameters allow to choose between 4 possible checkpoint save options :
-* **none** will not save any checkpoint
-* **last** will save only the training last iteration
-* **few** will save the model at 25%, 50%, 75% and end of training
-* **often** will save every 10% of total training epoch  
 
-You can use it as such : 
-```
-python train.py --mode=train --cp=few
-```
+### **Command line arguments** :
 
-### **Evaluate**
-The evaluation mode allow you to choose between 3 modes : 
-* **one** will create and save one fake img created by your model last cp in a result/ folder 
-* **batch** will create a batch (64 images) of fakes using your model last cp
-* **full** will create a batch of fakes for every checkpoint saved in your checkpoint/ folder
+* The **mode** argument allow you to switch between *train* mode to start a model from scratch or *evaluate* to generate new fakes from saved model (.pt file)
+* the **model** argument can be DCGAN or WGAN-GP atm.
+* **backbone** allow you to choose different NN for your model training procedure. (default is DCGAN backbone)
+* **run_note** is a name that will personalize your checkpoint and results folder name so that you can check and compare results. 
+* **cp** argument can be *none*, *last* (only last epoch model parameters are saved), *few* (model is saved at 25%, 50%, 75% and end of training epochs) and *often* (model is saved every 10% of training epochs)
+
+
+## **Evaluate**
+Evaluation function can be used on a specified checkpoint to generate a batch of fake images from you checkpoint model in a result/ folder  
+You must specify the model used in your checkpoint and a path to the checkpoint file :
+
 ```
-python train.py --mode=evaluate --type=batch
+python main.py --mode=evaluate --model=DCGAN --eval_path=checkpoint/checkpoint_name.pt
 ```
 
+## Tensorboard
+I use tensorboard to save some informations about models trained : 
+* Save G and D loss after each epoch
+* Save a grid of fake images every few epochs
+
+The results are in a runs/run_note folder :
+```
+tensorboard --logdir=runs/run_note 
+```
 ## IN PROGRESS
 I'm currently working on the code to implement WGAN-GP training procedure along with the classic DCGAN. the files in training/ and backbone/ are in progress along with the main.py file. 
 You can still use the commands above to start training a DCGAN on the data. 
