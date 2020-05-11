@@ -3,10 +3,10 @@ from easydict import EasyDict as edict
 config = edict()
 
 config.MODEL = edict()
-config.MODEL.dcgan = edict()
-config.MODEL.dcgan.nc = 3
-config.MODEL.dcgan.ngf = 64
-config.MODEL.dcgan.ndf = 64
+config.MODEL.base = edict()
+config.MODEL.base.nc = 3
+config.MODEL.base.ngf = 64
+config.MODEL.base.ndf = 64
 
 config.TRAIN = edict()
 config.TRAIN.dcgan = edict()

@@ -13,24 +13,24 @@ class WGAN_Generator(nn.Module):
         self.ngpu = config.DATA.ngpu
         self.main = nn.Sequential(
             # input is Z, going into a convolution
-            nn.ConvTranspose2d(config.DATA.nz, config.MODEL.dcgan.ngf * 8, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(config.MODEL.dcgan.ngf * 8),
+            nn.ConvTranspose2d(config.DATA.nz, config.MODEL.base.ngf * 8, 4, 1, 0, bias=False),
+            nn.BatchNorm2d(config.MODEL.base.ngf * 8),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout2d(0.5),
             # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(config.MODEL.dcgan.ngf * 8, config.MODEL.dcgan.ngf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(config.MODEL.dcgan.ngf * 4),
+            nn.ConvTranspose2d(config.MODEL.base.ngf * 8, config.MODEL.base.ngf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(config.MODEL.base.ngf * 4),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d(config.MODEL.dcgan.ngf * 4, config.MODEL.dcgan.ngf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(config.MODEL.dcgan.ngf * 2),
+            nn.ConvTranspose2d(config.MODEL.base.ngf * 4, config.MODEL.base.ngf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(config.MODEL.base.ngf * 2),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d(config.MODEL.dcgan.ngf * 2, config.MODEL.dcgan.ngf, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(config.MODEL.dcgan.ngf),
+            nn.ConvTranspose2d(config.MODEL.base.ngf * 2, config.MODEL.base.ngf, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(config.MODEL.base.ngf),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf) x 32 x 32
-            nn.ConvTranspose2d(config.MODEL.dcgan.ngf, config.MODEL.dcgan.nc, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(config.MODEL.base.ngf, config.MODEL.base.nc, 4, 2, 1, bias=False),
             nn.Tanh()
             # state size. (nc) x 64 x 64
         )
@@ -47,25 +47,27 @@ class WGAN_Discriminator(nn.Module):
         self.ngpu = config.DATA.ngpu
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
-            nn.Conv2d(config.MODEL.dcgan.nc, config.MODEL.dcgan.ndf, 4, 2, 1, bias=False),
+            nn.Conv2d(config.MODEL.base.nc, config.MODEL.base.ndf, 4, 2, 1, bias=False),
+            nn.InstanceNorm2d(config.MODEL.base.ndf, affine=True),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf) x 32 x 32
-            nn.Conv2d(config.MODEL.dcgan.ndf, config.MODEL.dcgan.ndf * 2, 4, 2, 1, bias=False),
+            nn.Conv2d(config.MODEL.base.ndf, config.MODEL.base.ndf * 2, 4, 2, 1, bias=False),
+            nn.InstanceNorm2d(config.MODEL.base.ndf*2, affine=True),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*2) x 16 x 16
-            nn.Conv2d(config.MODEL.dcgan.ndf * 2, config.MODEL.dcgan.ndf * 4, 4, 2, 1, bias=False),
+            nn.Conv2d(config.MODEL.base.ndf * 2, config.MODEL.base.ndf * 4, 4, 2, 1, bias=False),
+            nn.InstanceNorm2d(config.MODEL.base.ndf*4, affine=True),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*4) x 8 x 8
-            nn.Conv2d(config.MODEL.dcgan.ndf * 4, config.MODEL.dcgan.ndf * 8, 4, 2, 1, bias=False),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(config.MODEL.base.ndf * 4, config.MODEL.base.ndf * 8, 4, 2, 1, bias=False),
+            nn.InstanceNorm2d(config.MODEL.base.ndf*8, affine=True),
+            nn.LeakyReLU(0.2, inplace=True))
             # state size. (ndf*8) x 4 x 4
-            nn.Conv2d(config.MODEL.dcgan.ndf * 8, 1, 4, 1, 0, bias=False),
-            nn.LeakyReLU(0.2, inplace=True)
-        )            #Removing the sigmoid for WGAN, the discriminator send a scalar value as signal not a probability
+
+        self.output = nn.Sequential(
+            nn.Conv2d(config.MODEL.base.ndf * 8, 1, 4, 1, 0, bias=False)
+        )
 
     def forward(self, input):
-        x = self.main(input)
-        x = torch.mean(x, dim=(2,3))
-        activation = nn.LeakyReLU(0.2, inplace=True)
-        output = activation(x)
-        return output
+        x = self.main(input)     
+        return self.output(x)

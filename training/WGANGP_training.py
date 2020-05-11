@@ -49,6 +49,8 @@ class WGANGP_train(object):
         self.optimD = optim.Adam(self.D.parameters(), lr = config.TRAIN.wgan_gp.lr, betas=(config.TRAIN.wgan_gp.beta1, config.TRAIN.wgan_gp.beta2))
         self.optimG = optim.Adam(self.G.parameters(), lr = config.TRAIN.wgan_gp.lr, betas=(config.TRAIN.wgan_gp.beta1, config.TRAIN.wgan_gp.beta2))
 
+
+
     def train(self, checkpoint = "last"):
         self.t_begin = t.time()
         iters = 0
@@ -84,13 +86,14 @@ class WGANGP_train(object):
 
                 # TRAIN ON REAL DATA
                 self.D.zero_grad()
+
                 real_data = data[0].to(self.device)
                 b_size = real_data.size(0)
                 output_real = self.D(real_data)
 
                 noise = torch.randn(b_size, config.DATA.nz, 1, 1, device = self.device)
                 fake = self.G(noise)
-                output_fake = self.D(fake.detach()).view(-1)
+                output_fake = self.D(fake)
 
                 errD = self.wasserstein_loss_dis(output_fake=output_fake,
                                                  output_real=output_real)
@@ -102,18 +105,16 @@ class WGANGP_train(object):
 
                 self.optimD.step()
 
-                D_x, D_G_z1 = self.compute_probs(output_real=output_real,
-                                              output_fake=output_fake)
                 #-------------------
                 # TRAIN GENERATOR
                 #-------------------
                 if i % self.critics_iter == 0:
 
                         self.G.zero_grad()
-                        output_gen = self.D(fake).view(-1)
+                        
+                        output_gen = self.D(fake)
                         errG = self.wasserstein_loss_gen(output_fake=output_gen)
                         errG.backward()
-                        D_G_z2 = torch.sigmoid(output_gen).mean().item()
                         
                         self.optimG.step()
 
@@ -151,18 +152,18 @@ class WGANGP_train(object):
                 iters += 1
 
             time_epoch = t.time() - t_epoch
-            print('[%d/%d][%d/%d]\tLoss_D: %.4f \tTotal_Loss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f\tTime: %.4f'
+            print('[%d/%d][%d/%d]\tLoss_D: %.4f \tTotal_Loss_D: %.4f\tLoss_G: %.4f\tTime: %.4f'
                 % (epoch, config.DATA.num_epochs, i, len(self.dataloader),
-                    errD.item(), errD_total.item(), errG.item(), D_x, D_G_z1, D_G_z2, time_epoch))
+                    errD.item(), errD_total.item(), errG.item(), time_epoch))
 
             self.writer.add_scalar("DCGAN Generator Loss", errG.item(), global_step= epoch * len(self.dataloader) + i)
             self.writer.add_scalar("DCGAN Discriminator Loss", errD.item(), global_step= epoch * len(self.dataloader) + i )
-            self.writer.add_scalar("DCGAN Real images detection", D_x, global_step = epoch * len(self.dataloader) + i )
-            self.writer.add_scalar("DCGAN Fake images detection", D_G_z1, global_step = epoch * len(self.dataloader) + i )
 
         self.t_end = t.time()
         print('Time of training:{}'.format((self.t_end - self.t_begin)))
-     
+
+
+
     def compute_gradient_penalty_loss(self,
                                       real_images,
                                       fake_images,
@@ -211,19 +212,6 @@ class WGANGP_train(object):
             (gradients.norm(2, dim=1) - 1)**2).mean() * gp_scale
 
         return gradient_penalty
-    
-    def compute_probs(self, output_real, output_fake):
-        """
-        Computes probabilities from real/fake images logits.
-        Args:
-            output_real (Tensor): A batch of output logits of shape (N, 1) from real images.
-            output_fake (Tensor): A batch of output logits of shape (N, 1) from fake images.
-        Returns:
-            tuple: Average probabilities of real/fake image considered as real for the batch.
-        """
-        D_x = torch.sigmoid(output_real).mean().item()
-        D_Gz = torch.sigmoid(output_fake).mean().item()
-        return D_x, D_Gz
         
     def wasserstein_loss_dis(self, output_real, output_fake):
         """
