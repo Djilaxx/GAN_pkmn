@@ -1,30 +1,59 @@
+import torch
+import torchvision.transforms as transforms
 from easydict import EasyDict as edict 
 
 config = edict()
 
-config.MODEL = edict()
-config.MODEL.dcgan = edict()
-config.MODEL.dcgan.nc = 3
-config.MODEL.dcgan.ngf = 64
-config.MODEL.dcgan.ndf = 64
+config.main = edict()
+config.main.DATA_PATH = 'data/data_ready/'
+config.main.NGPU = 1
+config.main.NZ = 100
+config.main.IMAGE_SIZE = (64,64)
+config.main.SAVE_FREQ = 50 #Checkpoint frequency
+config.main.DEVICE = torch.device("cuda:0" if (torch.cuda.is_available() and config.main.NGPU > 0) else "cpu")
+config.main.BATCH_SIZE = 32
+config.main.EPOCHS = 300
+config.main.LR = 0.0001
+config.main.BETA1 = 0
+config.main.BETA2 = 0.9
+config.main.TRANSFORMS = transforms.Compose([
+                            transforms.RandomHorizontalFlip(p=0.5),
+                            transforms.Resize(config.main.IMAGE_SIZE),
+                            transforms.ToTensor(),
+                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                           ])
 
-config.TRAIN = edict()
-config.TRAIN.dcgan = edict()
-config.TRAIN.dcgan.lr = 0.0002
-config.TRAIN.dcgan.beta1 = 0.5
-config.TRAIN.dcgan.beta2 = 0.999
+config.dcgan = edict()
+config.dcgan.BATCH_SIZE = 32
+config.dcgan.EPOCHS = 1000
+config.dcgan.NC = 3
+config.dcgan.NGF = 64
+config.dcgan.NDF = 64
+config.dcgan.LR = 0.0002
+config.dcgan.BETA1 = 0.5
+config.dcgan.BETA2 = 0.999
+config.dcgan.TRANSFORMS = transforms.Compose([
+                            transforms.RandomHorizontalFlip(p=0.5),
+                            transforms.Resize(config.main.IMAGE_SIZE),
+                            transforms.ToTensor(),
+                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                           ])
 
-config.TRAIN.wgan_gp = edict()
-config.TRAIN.wgan_gp.lambda_gp = 10
-config.TRAIN.wgan_gp.lr = 0.0001
-config.TRAIN.wgan_gp.beta1 = 0
-config.TRAIN.wgan_gp.beta2 = 0.9
+config.wgan = edict()
+config.wgan.BATCH_SIZE = 32
+config.wgan.EPOCHS = 1000
+config.wgan.CRITICS_ITER = 5
+config.wgan.NC = 3
+config.wgan.NGF = 64
+config.wgan.NDF = 64
+config.wgan.LR = 0.0001
+config.wgan.beta1 = 0
+config.wgan.beta2 = 0.9
+config.wgan.lambda_gp = 10
+config.wgan.TRANSFORMS = transforms.Compose([
+                            transforms.RandomHorizontalFlip(p=0.5),
+                            transforms.Resize(config.main.IMAGE_SIZE),
+                            transforms.ToTensor(),
+                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                           ])
 
-config.DATA = edict()
-config.DATA.dataroot = 'D:/Documents/GitHub/DCGAN_pkmn/data/'
-config.DATA.workers = 0
-config.DATA.ngpu = 1
-config.DATA.nz = 100
-config.DATA.image_size = (64,64)
-config.DATA.batch_size = 128
-config.DATA.num_epochs = 1000
