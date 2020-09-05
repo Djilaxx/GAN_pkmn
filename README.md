@@ -66,24 +66,21 @@ python -m pip install -r requirement.txt
 ### **Train a DCGAN** :
 I apply the model on the pokemon data in the data_ready folder, you can re-train using :
 ```
-python main.py --model=DCGAN --mode=train --run_note=NAME_OF_RUN
+python run.py --model=DCGAN --run_note=NAME_OF_RUN
 ```
 
 ### **Train a WGAN-GP** :
 The WGAN-GP implementation is still in progress, but should normally start correctly :
 ```
-python main.py --model=WGAN-GP --backbone=WGAN --run_note=NAME_OF_RUN
+python main.py --model=WGAN --run_note=NAME_OF_RUN
 ```
 
 You can also train on your own data (this is basically a torch implementation of DCGAN applied on pokemon data) by changing the root in config.py  
 
 ### **Command line arguments** :
 
-* The **mode** argument allow you to switch between *train* mode to start a model from scratch or *evaluate* to generate new fakes from saved model (.pt file)
 * the **model** argument can be DCGAN or WGAN-GP atm.
-* **backbone** allow you to choose different NN for your model training procedure. (default is DCGAN backbone)
 * **run_note** is a name that will personalize your checkpoint and results folder name so that you can check and compare results. 
-* **cp** argument can be *none*, *last* (only last epoch model parameters are saved), *few* (model is saved at 25%, 50%, 75% and end of training epochs) and *often* (model is saved every 10% of training epochs)
 
 
 ## **Evaluate**
@@ -91,7 +88,7 @@ Evaluation function can be used on a specified checkpoint to generate a batch of
 You must specify the model used in your checkpoint and a path to the checkpoint file :
 
 ```
-python main.py --mode=evaluate --model=DCGAN --eval_path=checkpoint/checkpoint_name.pt
+python inference.py --model=DCGAN --eval_path=checkpoint/checkpoint_name.pt
 ```
 
 ## Tensorboard
