@@ -72,7 +72,7 @@ python run.py --model=DCGAN --run_note=NAME_OF_RUN
 ### **Train a WGAN-GP** :
 The WGAN-GP implementation is still in progress, but should normally start correctly :
 ```
-python main.py --model=WGAN --run_note=NAME_OF_RUN
+python run.py --model=WGAN --run_note=NAME_OF_RUN
 ```
 
 You can also train on your own data (this is basically a torch implementation of DCGAN applied on pokemon data) by changing the root in config.py  
@@ -101,7 +101,7 @@ The results are in a runs/run_note folder :
 tensorboard --logdir=runs/run_note 
 ```
 ## IN PROGRESS
-I'm currently working on the code to implement WGAN-GP training procedure along with the classic DCGAN. the files in training/ and backbone/ are in progress along with the main.py file. 
+I'm currently working on the code to implement WGAN-GP training procedure along with the classic DCGAN. the files in training/ and backbone/ are in progress along with the run.py file. 
 You can still use the commands above to start training a DCGAN on the data. 
 
 ## **Reference**

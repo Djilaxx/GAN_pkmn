@@ -12,24 +12,24 @@ class WGAN_Generator(nn.Module):
         super(WGAN_Generator, self).__init__()
         self.main = nn.Sequential(
             # input is Z, going into a convolution
-            nn.ConvTranspose2d(config.main.NZ, config.wgan.NGF * 8, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(config.wgan.NGF * 8),
+            nn.ConvTranspose2d(config.main.NZ, config.WGAN.NGF * 8, 4, 1, 0, bias=False),
+            nn.BatchNorm2d(config.WGAN.NGF * 8),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout2d(0.5),
             # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(config.wgan.NGF * 8, config.wgan.NGF * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(config.wgan.NGF * 4),
+            nn.ConvTranspose2d(config.WGAN.NGF * 8, config.WGAN.NGF * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(config.WGAN.NGF * 4),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d(config.wgan.NGF * 4, config.wgan.NGF * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(config.wgan.NGF * 2),
+            nn.ConvTranspose2d(config.WGAN.NGF * 4, config.WGAN.NGF * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(config.WGAN.NGF * 2),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d(config.wgan.NGF * 2, config.wgan.NGF, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(config.wgan.NGF),
+            nn.ConvTranspose2d(config.WGAN.NGF * 2, config.WGAN.NGF, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(config.WGAN.NGF),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf) x 32 x 32
-            nn.ConvTranspose2d(config.wgan.NGF, config.wgan.NC, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(config.WGAN.NGF, config.WGAN.NC, 4, 2, 1, bias=False),
             nn.Tanh()
             # state size. (nc) x 64 x 64
         )
@@ -45,19 +45,19 @@ class WGAN_Discriminator(nn.Module):
         super(WGAN_Discriminator, self).__init__()
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
-            nn.Conv2d(config.wgan.NC, config.wgan.NDF, 4, 2, 1, bias=False),
+            nn.Conv2d(config.WGAN.NC, config.WGAN.NDF, 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf) x 32 x 32
-            nn.Conv2d(config.wgan.NDF, config.wgan.NDF * 2, 4, 2, 1, bias=False),
+            nn.Conv2d(config.WGAN.NDF, config.WGAN.NDF * 2, 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*2) x 16 x 16
-            nn.Conv2d(config.wgan.NDF * 2, config.wgan.NDF * 4, 4, 2, 1, bias=False),
+            nn.Conv2d(config.WGAN.NDF * 2, config.WGAN.NDF * 4, 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*4) x 8 x 8
-            nn.Conv2d(config.wgan.NDF * 4, config.wgan.NDF * 8, 4, 2, 1, bias=False),
+            nn.Conv2d(config.WGAN.NDF * 4, config.WGAN.NDF * 8, 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*8) x 4 x 4
-            nn.Conv2d(config.wgan.NDF * 8, 1, 4, 1, 0, bias=False),
+            nn.Conv2d(config.WGAN.NDF * 8, 1, 4, 1, 0, bias=False),
             nn.LeakyReLU(0.2, inplace=True)
         )            #Removing the sigmoid for WGAN, the discriminator send a scalar value as signal not a probability
 

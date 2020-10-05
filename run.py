@@ -23,6 +23,7 @@ def run(model = "DCGAN", run_note = ''):
     Generator.apply(weights_init)
     Discriminator = models[model]["Discriminator"]
     Discriminator.apply(weights_init)
+    
     fix_noise = torch.randn(64, config.main.NZ, 1, 1, device = config.main.DEVICE)
     writer = SummaryWriter(os.path.join('runs/' , run_note))    
     
@@ -33,16 +34,16 @@ def run(model = "DCGAN", run_note = ''):
     pkmn_dataset = POKEMON_DS(
         image_path = image_path,
         resize = None,
-        transforms = config.main.TRANSFORMS
+        transforms = config[model].TRANSFORMS
     )
 
     pkmn_dataloader = torch.utils.data.DataLoader(
-            pkmn_dataset, batch_size=config.main.BATCH_SIZE, shuffle=True, num_workers=6
+            pkmn_dataset, batch_size=config[model].BATCH_SIZE, shuffle=True, num_workers=0, drop_last=True
         )
     
     loss_fct = nn.BCELoss()
-    optimizerD = torch.optim.Adam(Discriminator.parameters(), lr = config.main.LR, betas=(config.main.BETA1, config.main.BETA2))
-    optimizerG = torch.optim.Adam(Generator.parameters(), lr = config.main.LR, betas=(config.main.BETA1, config.main.BETA2))
+    optimizerD = torch.optim.Adam(Discriminator.parameters(), lr = config[model].LR, betas=(config[model].BETA1, config[model].BETA2))
+    optimizerG = torch.optim.Adam(Generator.parameters(), lr = config[model].LR, betas=(config[model].BETA1, config[model].BETA2))
     if model == "WGAN":
         trainer = WGAN_trainer(generator=Generator,
                         discriminator=Discriminator,
@@ -58,11 +59,11 @@ def run(model = "DCGAN", run_note = ''):
                         loss=loss_fct,
                         device=config.main.DEVICE)
 
-    for epoch in range(config.main.EPOCHS):
+    for epoch in range(config[model].EPOCHS):
         print(f"Starting epoch number : {epoch}")
         errD, D_x, D_G_z1, errG, D_G_z2 = trainer.training_step(pkmn_dataloader)
 
-        if epoch % config.main.SAVE_FREQ == 0 or epoch == config.dcgan.EPOCHS-1:
+        if epoch % config.main.SAVE_FREQ == 0 or epoch == config[model].EPOCHS-1:
             save_checkpoint(generator = Generator,
                             discriminator = Discriminator,
                             optiG = optimizerG,
@@ -82,8 +83,8 @@ def run(model = "DCGAN", run_note = ''):
                 writer.add_scalar("DCGAN Fooling power", D_G_z2, global_step = epoch)
         
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", type = str, help = "One of DCGAN, WGAN")
-parser.add_argument("--run_note", type = str, help = "Add a note on your training run to specify it - Will add the note to checkpoint name and tensorboard folder name")     
+parser.add_argument("--model", type = str, help = "One of DCGAN, WGAN", default = "DCGAN")
+parser.add_argument("--run_note", type = str, help = "Add a note on your training run to specify it - Will add the note to checkpoint name and tensorboard folder name", default = "test")     
 
 args = parser.parse_args()
 

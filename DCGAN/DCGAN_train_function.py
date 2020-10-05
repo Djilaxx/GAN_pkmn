@@ -36,9 +36,11 @@ class DCGAN_trainer:
             # DISCRIMINATOR STEP ON REAL DATA
             real_images = data["images"]
             real_images = real_images.to(self.device)
-            b_size = real_images.size(0)
-            label = torch.full((b_size,), 1, dtype=torch.float32, device=self.device)
-            label = label_smoothing(label, device = self.device, real = True)
+            #b_size = real_images.size(0)
+            label = torch.ones(config.DCGAN.BATCH_SIZE, dtype=torch.float32, device=self.device)
+
+            #label = torch.full((b_size,), 1, dtype=torch.float32, device=self.device)
+            label = label_smoothing(label, device = self.device, real=True)
             label = noisy_labelling(label, 0.05, (0,0.2), smooth_label=True)
             self.D.zero_grad()
 
@@ -49,7 +51,8 @@ class DCGAN_trainer:
             D_x = output.mean().item()
             
             # DISCRIMINATOR STEP ON FAKE DATA
-            noise = torch.randn(b_size, config.main.NZ, 1, 1, device = self.device)
+            #noise = torch.randn(b_size, config.main.NZ, 1, 1, device = self.device)
+            noise = torch.randn(config.DCGAN.BATCH_SIZE, config.main.NZ, 1, 1, device = self.device)
 
             fake_images = self.G(noise)
             label.fill_(0)
@@ -74,8 +77,8 @@ class DCGAN_trainer:
 
             self.optiG.step()
 
-            D_losses.update(errD.item(), b_size)
-            G_losses.update(errG.item(), b_size)
+            D_losses.update(errD.item(), config.DCGAN.BATCH_SIZE)
+            G_losses.update(errG.item(), config.DCGAN.BATCH_SIZE)
             tk0.set_postfix(D_loss= D_losses.avg, G_loss = G_losses.avg)
         print(f"Discriminator Loss = {D_losses.avg}, Prediction on Real data = {D_x} and fake data = {D_G_z1}")
         print(f"Generator Loss = {G_losses.avg}, and fooling power = {D_G_z2}")

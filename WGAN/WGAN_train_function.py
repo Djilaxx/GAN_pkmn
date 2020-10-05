@@ -50,7 +50,7 @@ class WGAN_trainer:
             errD = self.wasserstein_loss_dis(output_fake=output_fake,
                                             output_real=output_real)
             
-            errD_GP = self.compute_gradient_penalty_loss(real_images=real_data, fake_images=fake, gp_scale=config.TRAIN.wgan_gp.lambda_gp)
+            errD_GP = self.compute_gradient_penalty_loss(real_images=real_data, fake_images=fake, gp_scale=config.WGAN.LAMBDA_GP)
             errD_total = errD + errD_GP
             errD_total.backward()
             self.optiD.step()
@@ -58,7 +58,7 @@ class WGAN_trainer:
                                             output_fake=output_fake)
 
 
-            if i % config.wgan.CRITICS_ITER == 0:
+            if i % config.WGAN.CRITICS_ITER == 0:
                 self.G.zero_grad()
                 output_gen = self.D(fake).view(-1)
                 errG = self.wasserstein_loss_gen(output_fake=output_gen)
