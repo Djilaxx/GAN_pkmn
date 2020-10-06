@@ -15,7 +15,7 @@ from utils.noisy_labelling import noisy_labelling
 from datasets import pkmn_ds
 from config import config
 
-class WGAN_trainer:
+class Trainer:
     def __init__(self, generator, discriminator, optiD, optiG, loss, device):
         self.G = generator
         self.D = discriminator
@@ -37,13 +37,12 @@ class WGAN_trainer:
             # DISCRIMINATOR STEP ON REAL DATA
             real_images = data["images"]
             real_images = real_images.to(self.device)
-            b_size = real_images.size(0)
 
             self.D.zero_grad()
 
             output_real = self.D(real_images).view(-1)
 
-            noise = torch.randn(b_size, config.main.NZ, 1, 1, device = self.device)
+            noise = torch.randn(config.WGAN.BATCH_SIZE, config.main.NZ, 1, 1, device = self.device)
             fake = self.G(noise)
             output_fake = self.D(fake.detach()).view(-1)
 
@@ -66,8 +65,8 @@ class WGAN_trainer:
                 D_G_z2 = torch.sigmoid(output_gen).mean().item()
                 self.optiG.step()
 
-            D_losses.update(errD_total.item(), b_size)
-            G_losses.update(errG.item(), b_size)
+            D_losses.update(errD_total.item(), config.WGAN.BATCH_SIZE)
+            G_losses.update(errG.item(), config.WGAN.BATCH_SIZE)
             tk0.set_postfix(D_loss= D_losses.avg, G_loss = G_losses.avg)
         print(f"Discriminator Loss = {D_losses.avg}, Prediction on Real data = {D_x} and fake data = {D_G_z1}")
         print(f"Generator Loss = {G_losses.avg}, and fooling power = {D_G_z2}")

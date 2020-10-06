@@ -2,14 +2,14 @@ import torch
 import torch.nn as nn
 from config import config
 
-class WGAN_Generator(nn.Module):
+class Generator(nn.Module):
     '''
     Our Generator is subclassed with the nn.Module
     The base class for all NN in torch
     Adding Dropout to the Generator to create "noise" as recommanded in https://github.com/soumith/ganhacks
     '''
     def __init__(self):
-        super(WGAN_Generator, self).__init__()
+        super(Generator, self).__init__()
         self.main = nn.Sequential(
             # input is Z, going into a convolution
             nn.ConvTranspose2d(config.main.NZ, config.WGAN.NGF * 8, 4, 1, 0, bias=False),
@@ -37,12 +37,12 @@ class WGAN_Generator(nn.Module):
     def forward(self, input):
         return self.main(input)
 
-class WGAN_Discriminator(nn.Module):
+class Discriminator(nn.Module):
     '''
     Discriminator without BatchNorm for WGAN-GP training 
     '''
     def __init__(self):
-        super(WGAN_Discriminator, self).__init__()
+        super(Discriminator, self).__init__()
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
             nn.Conv2d(config.WGAN.NC, config.WGAN.NDF, 4, 2, 1, bias=False),

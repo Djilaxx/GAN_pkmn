@@ -15,7 +15,7 @@ from utils.noisy_labelling import noisy_labelling
 from datasets import pkmn_ds
 from config import config
 
-class DCGAN_trainer:
+class Trainer:
     def __init__(self, generator, discriminator, optiD, optiG, loss, device):
         self.G = generator
         self.D = discriminator
@@ -36,12 +36,10 @@ class DCGAN_trainer:
             # DISCRIMINATOR STEP ON REAL DATA
             real_images = data["images"]
             real_images = real_images.to(self.device)
-            #b_size = real_images.size(0)
             label = torch.ones(config.DCGAN.BATCH_SIZE, dtype=torch.float32, device=self.device)
 
-            #label = torch.full((b_size,), 1, dtype=torch.float32, device=self.device)
             label = label_smoothing(label, device = self.device, real=True)
-            label = noisy_labelling(label, 0.05, (0,0.2), smooth_label=True)
+            label = noisy_labelling(label, 0.05, (0,0.1), smooth_label=True)
             self.D.zero_grad()
 
             output = self.D(real_images).view(-1)
@@ -51,13 +49,12 @@ class DCGAN_trainer:
             D_x = output.mean().item()
             
             # DISCRIMINATOR STEP ON FAKE DATA
-            #noise = torch.randn(b_size, config.main.NZ, 1, 1, device = self.device)
             noise = torch.randn(config.DCGAN.BATCH_SIZE, config.main.NZ, 1, 1, device = self.device)
 
             fake_images = self.G(noise)
             label.fill_(0)
             label = label_smoothing(label, device = self.device, real = False)
-            label = noisy_labelling(label, 0.05, (0.7, 1.2), smooth_label=True)
+            label = noisy_labelling(label, 0.05, (0.9, 1.1), smooth_label=True)
 
             output = self.D(fake_images.detach()).view(-1)
             errD_fake = self.loss(output, label)
