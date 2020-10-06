@@ -48,7 +48,7 @@ as you can see, these are not super cool new pokemons yet, but this project is s
 
 ### **Prerequisites**
 ```
-python -m pip install -r requirement.txt
+python -m pip install -r requirements.txt
 ```
 
 ## **Train**
