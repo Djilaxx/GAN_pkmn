@@ -43,16 +43,6 @@ as you can see, these are not super cool new pokemons yet, but this project is s
 [here]: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
 [github]: https://github.com/soumith/ganhacks
 
-## **Next steps**
-<hr />
-The next steps for this project include :  
-
-* Work on WGAN-GP implementation
-* Changing the model (image size, more performant model)
-* Improving the dataset (Cleaning images that are too similar, adding new images)
-* Look into SN-GAN and SAGAN for next implementation
-
-
 ## **Code**
 <hr />
 
@@ -79,7 +69,7 @@ You can also train on your own data (this is basically a torch implementation of
 
 ### **Command line arguments** :
 
-* the **model** argument can be DCGAN or WGAN-GP atm.
+* the **model** argument can be DCGAN or WGAN atm.
 * **run_note** is a name that will personalize your checkpoint and results folder name so that you can check and compare results. 
 
 
@@ -88,7 +78,7 @@ Evaluation function can be used on a specified checkpoint to generate a batch of
 You must specify the model used in your checkpoint and a path to the checkpoint file :
 
 ```
-python inference.py --model=DCGAN --eval_path=checkpoint/checkpoint_name.pt
+python inference.py --model=DCGAN --path=checkpoint/checkpoint_name.pt --note=NAME_OF_EVAL
 ```
 
 ## Tensorboard
@@ -100,9 +90,15 @@ The results are in a runs/run_note folder :
 ```
 tensorboard --logdir=runs/run_note 
 ```
-## IN PROGRESS
-I'm currently working on the code to implement WGAN-GP training procedure along with the classic DCGAN. the files in training/ and backbone/ are in progress along with the run.py file. 
-You can still use the commands above to start training a DCGAN on the data. 
+
+## **Next steps**
+<hr />
+The next steps for this project include :  
+
+* Work on WGAN-GP implementation
+* Changing the model (image size, more performant model)
+* Improving the dataset (Cleaning images that are too similar, adding new images)
+* Look into SN-GAN and SAGAN for next implementation
 
 ## **Reference**
 [1] [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434)  
