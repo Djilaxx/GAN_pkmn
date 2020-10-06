@@ -39,11 +39,11 @@ def evaluate(model, path, note):
     # SAVE FAKE IMAGES
     #--------------------
     Path("results/").mkdir(parents=True, exist_ok=True)
-    vutils.save_image(vutils.make_grid(fake, padding=2, normalize=True), "results/" + filename + "_grid" + ".png")
+    vutils.save_image(vutils.make_grid(fake, padding=2, normalize=True), "results/" + filename + "/" + "grid" + ".png")
     writer.add_image("fake pokemons evaluation", fake, dataformats="NCHW")
     for i in range(0, len(fake)):
         img = fake[i]
-        vutils.save_image(img, "results/" + filename + "_" + str(i) + ".png")
+        vutils.save_image(img, "results/" + filename + "/" + str(i) + ".png")
 
 
 parser = argparse.ArgumentParser()
