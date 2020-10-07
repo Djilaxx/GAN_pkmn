@@ -59,7 +59,8 @@ class Discriminator(nn.Module):
             # state size. (ndf*8) x 4 x 4
             nn.Conv2d(config.WGAN.NDF * 8, 1, 4, 1, 0, bias=False),
             nn.LeakyReLU(0.2, inplace=True)
-        )            #Removing the sigmoid for WGAN, the discriminator send a scalar value as signal not a probability
+        )            
+        #Removing the sigmoid for WGAN, the discriminator send a scalar value as signal not a probability
 
     def forward(self, input):
         x = self.main(input)
