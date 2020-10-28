@@ -11,15 +11,17 @@ from torch.utils.tensorboard import SummaryWriter
 from datasets.pkmn_ds import POKEMON_DS
 from utils.weights_init import weights_init
 from utils.checkpoint import save_checkpoint
+from trainer import train_function
 from config import config
 
-def run(model, run_note):
+def run(model, structure, loss, run_note):
     #Loading Generator and Discriminator and initiating layer's weight
-    backbone = importlib.import_module(".model", model)
+    backbone = importlib.import_module(f"models.{model}.{structure}")
     Generator = backbone.Generator().to(config.main.DEVICE)
-    Generator.apply(weights_init)
     Discriminator = backbone.Discriminator().to(config.main.DEVICE)
-    Discriminator.apply(weights_init)
+    if model == "DCGAN" & structure == "CONVNET": 
+        Generator.apply(weights_init)
+        Discriminator.apply(weights_init)
     
     #Creating the tensorboard writer for future logging
     writer = SummaryWriter(os.path.join('runs/' , run_note))
@@ -42,19 +44,19 @@ def run(model, run_note):
         )
     
     #Defining loss and optimizer
-    loss_fct = nn.BCELoss()
+    loss_module = importlib.import_module(f"loss.{loss}")
+    loss_fct = loss_module.Loss_fct()
     optimizerD = torch.optim.Adam(Discriminator.parameters(), lr = config[model].LR, betas=(config[model].BETA1, config[model].BETA2))
     optimizerG = torch.optim.Adam(Generator.parameters(), lr = config[model].LR, betas=(config[model].BETA1, config[model].BETA2))
 
     #Creating the trainer objects
-    train_function = importlib.import_module(".train_function", model)
     trainer = train_function.Trainer(generator=Generator,
                     discriminator=Discriminator,
                     optiD=optimizerD,
                     optiG=optimizerG,
                     loss=loss_fct,
                     device=config.main.DEVICE)
-
+xxxxx
     #Training the model
     for epoch in range(config[model].EPOCHS):
         print(f"Starting epoch number : {epoch}")
@@ -81,7 +83,9 @@ def run(model, run_note):
                 writer.add_scalar("DCGAN Fooling power", D_G_z2, global_step = epoch)
         
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", type = str, help = "One of DCGAN, WGAN", default = "DCGAN")
+parser.add_argument("--model", type = str, help = "One of DCGAN, SNGAN", default = "DCGAN")
+parser.add_argument("--structure", type = str, help = "One of CONVNET, RESNET", default = "CONVNET")
+parser.add_argument("--loss", type = str, help = "One of BCE, LS-CE, WGAN", default = "BCE")
 parser.add_argument("--run_note", type = str, help = "Add a note on your training run to specify it - Will add the note to checkpoint name and tensorboard folder name", default = "test")     
 
 args = parser.parse_args()
@@ -89,6 +93,8 @@ args = parser.parse_args()
 if __name__ == "__main__":
     run(
         model = args.model,
+        structure = args.structure,
+        loss = args.loss,
         run_note=args.run_note
         )
 

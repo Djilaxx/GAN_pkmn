@@ -1,15 +1,15 @@
 import torch
 import torch.nn as nn
 
-class BCE_loss:
+class Loss_fct:
     def __init__(self):
         self.loss_fct = nn.BCEWithLogitsLoss()
 
     def dis_loss(self, output_real, output_fake, label_real ,label_fake):
         errD_real = self.loss_fct(output_real, label_real)
         errD_fake = self.loss_fct(output_fake, label_fake)
-        errD_total = errD_real + errD_fake
-        return errD_real, errD_fake, errD_total 
+        errD = errD_real + errD_fake
+        return errD
 
     def gen_loss(self, output_G, label_G):
         errG = self.loss_fct(output_G, label_G)

@@ -20,7 +20,7 @@ class LabelSmoothingCrossEntropy(nn.Module):
         # (1-ε)* H(q,p) + ε*H(u,p)
         return (1-self.ε)*nll + self.ε*(loss/c) 
 
-class LB_CE_loss:
+class Loss_fct:
     """
     Label Smoothing cross entropy loss class
     """
@@ -30,8 +30,8 @@ class LB_CE_loss:
     def dis_loss(self, output_real, label_real, output_fake, label_fake):
         errD_real = self.loss_fct(output_real, label_real)
         errD_fake = self.loss_fct(output_fake, label_fake)
-        errD_total = errD_real + errD_fake
-        return errD, errD_real, errD_fake
+        errD = errD_real + errD_fake
+        return errD
 
     def gen_loss(self, output_G, label_G):
         errG = self.loss_fct(output_G, label_G)

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-class WGAN_loss:
+class Loss_fct:
     
     def compute_gradient_penalty_loss(self, real_images, fake_images, gp_scale=10.0):
         """
@@ -73,7 +73,7 @@ class WGAN_loss:
         """
         loss = -1.0 * output_real.mean() + output_fake.mean()
 
-        return loss
+        return errD
 
 
     def gen_loss(self, output_G, label_G):
@@ -86,4 +86,4 @@ class WGAN_loss:
         """
         loss = -output_fake.mean()
 
-        return loss
+        return errG
