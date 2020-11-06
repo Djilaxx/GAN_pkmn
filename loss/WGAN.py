@@ -1,9 +1,13 @@
 import torch
 import torch.nn as nn
+import torch.nn.parallel
+from torch import autograd
 
 class Loss_fct:
-    
-    def compute_gradient_penalty_loss(self, real_images, fake_images, gp_scale=10.0):
+    def __init__(self):
+        self.name = "WGAN_loss"
+
+    def compute_gradient_penalty_loss(self, real_images, fake_images, discriminator, gp_scale=10.0):
         """
         Computes gradient penalty loss, as based on:
         https://github.com/jalola/improved-wgan-pytorch/blob/master/gan_train.py
@@ -33,7 +37,7 @@ class Loss_fct:
         interpolates.requires_grad_(True)
 
         # Get gradients of interpolates
-        disc_interpolates = self.D(interpolates)
+        disc_interpolates = discriminator(interpolates)
         gradients = autograd.grad(outputs=disc_interpolates,
                                     inputs=interpolates,
                                     grad_outputs=torch.ones(
@@ -71,12 +75,12 @@ class Loss_fct:
         Returns:
             Tensor: A scalar tensor loss output.        
         """
-        loss = -1.0 * output_real.mean() + output_fake.mean()
+        errD = -1.0 * output_real.mean() + output_fake.mean()
 
         return errD
 
 
-    def gen_loss(self, output_G, label_G):
+    def gen_loss(self, output_gen, label_gen):
         """
         Computes the wasserstein loss for generator.
         Args:
@@ -84,6 +88,6 @@ class Loss_fct:
         Returns:
             Tensor: A scalar tensor loss output.
         """
-        loss = -output_fake.mean()
+        errG = -output_gen.mean()
 
         return errG

@@ -3,6 +3,7 @@ import torch.nn as nn
 
 class Loss_fct:
     def __init__(self):
+        self.name = "BCE_loss"
         self.loss_fct = nn.BCEWithLogitsLoss()
 
     def dis_loss(self, output_real, output_fake, label_real ,label_fake):
@@ -11,8 +12,8 @@ class Loss_fct:
         errD = errD_real + errD_fake
         return errD
 
-    def gen_loss(self, output_G, label_G):
-        errG = self.loss_fct(output_G, label_G)
+    def gen_loss(self, output_gen, label_gen):
+        errG = self.loss_fct(output_gen, label_gen)
         return errG
 
     def compute_probs(self, output_real, output_fake):
