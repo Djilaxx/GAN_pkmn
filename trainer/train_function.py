@@ -38,8 +38,7 @@ class Trainer:
         # D OUTPUT ON REAL DATA
         output_real = self.D(real_images).view(-1)
         # D OUTPUT ON FAKE DATA
-        with torch.no_grad():
-            fake = self.G(noise)
+        fake = self.G(noise)
         output_fake = self.D(fake.detach()).view(-1)
         # DIS LOSS
         errD = self.loss.dis_loss(output_fake=output_fake, output_real=output_real, label_real=label_real, label_fake = label_fake)

@@ -21,7 +21,7 @@ def run(model, backbone, loss, run_note):
     Generator = arch.Generator().to(config.MAIN.DEVICE)
     Discriminator = arch.Discriminator().to(config.MAIN.DEVICE)
     #Weight init in resnet models is coded in the RESNET.py
-    if structure == "CONVNET": 
+    if backbone == "CONVNET": 
         Generator.apply(weights_init)
         Discriminator.apply(weights_init)
 
