@@ -96,7 +96,7 @@ args = parser.parse_args()
 if __name__ == "__main__":
     run(
         model = args.model,
-        structure = args.backbone,
+        backbone = args.backbone,
         loss = args.loss,
         run_note=args.run_note
         )
