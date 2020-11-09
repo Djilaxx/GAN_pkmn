@@ -13,15 +13,13 @@ def save_checkpoint(generator, discriminator, optiG, optiD, epoch, loss_fct, err
     D_file = os.path.basename(inspect.getmodule(discriminator.__class__).__file__).replace('.py', '')
     D_folder = os.path.basename(os.path.dirname(inspect.getmodule(discriminator.__class__).__file__))
 
-    torch.save
-    (
+    torch.save(
         {
                 'epoch': epoch,
                 'model_state_dict': generator.state_dict(),
                 'optimizer_state_dict': optiG.state_dict(),
                 'loss': errG
         },
-
         f"checkpoint/checkpointG-{G_folder}_{G_file}_{loss_file}_{epoch}_{round(errG.item(),2)}_{run_note}.pt"
     )
             

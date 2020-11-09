@@ -13,7 +13,7 @@ config.MAIN.IMAGE_SIZE = (64,64)
 config.MAIN.SAVE_FREQ = 25 #Checkpoint frequency
 config.MAIN.DEVICE = torch.device("cuda:0" if (torch.cuda.is_available() and config.MAIN.NGPU > 0) else "cpu")
 config.MAIN.BATCH_SIZE = 128
-config.MAIN.EPOCHS = 100
+config.MAIN.EPOCHS = 1000
 config.MAIN.TRANSFORMS = transforms.Compose([
                             transforms.RandomHorizontalFlip(p=0.5),
                             transforms.Resize(config.MAIN.IMAGE_SIZE),
