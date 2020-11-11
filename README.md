@@ -54,7 +54,11 @@ python -m pip install -r requirements.txt
 ### **Train**
 
 ```
-python -m run --model=DCGAN --backbone=CONVNET --loss=BCE --run_note=NAME_OF_RUN
+python -m run 
+--model=DCGAN 
+--backbone=CONVNET 
+--loss=BCE 
+--run_note=NAME_OF_RUN
 ```
 
 * model : **DCGAN** or **SNGAN**
